@@ -2,10 +2,10 @@ var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: "./src/bezier-app.js",
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    filename: 'sketch.js',
+    path: path.join(__dirname, 'dist')
   },
   module: {
     loaders: [
