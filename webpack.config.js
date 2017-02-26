@@ -19,7 +19,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        loaders: ['style', 'css', 'sass']
+        loader: "style-loader!css-loader!sass-loader"
       },
       {
         test: /\.js$/,
@@ -53,6 +53,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "src/index.html"
-    })
+    }),
   ]
 };
