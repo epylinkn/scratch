@@ -2,10 +2,10 @@ var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: "./src/bezier-app.js",
+  entry: "./src/sound.js",
   output: {
     filename: 'sketch.js',
-    path: path.join(__dirname, 'dist')
+    path: path.join(__dirname, 'dist'),
   },
   module: {
     loaders: [
@@ -43,6 +43,10 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: /\.mp3$/,
+        loader: 'file-loader'
       }
     ]
   },
@@ -52,7 +56,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/index.html"
+      template: "src/index-global.html"
     }),
   ]
 };
