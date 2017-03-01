@@ -6,6 +6,7 @@ var song;
 var waves = [];
 var mic;
 var fft;
+var bubbly;
 
 window.preload = function() {
   song = loadSound(mp3);
@@ -16,6 +17,11 @@ window.setup = function() {
   canvas.mouseClicked(togglePlay);
   song.setVolume(0.5);
   fft = new p5.FFT();
+
+  bubbly = createSprite(650, 180);
+  bubbly.addAnimation("normal", "assets/bubbly0001.png", "assets/bubbly0004.png");
+
+
 }
 
 window.draw = function() {
@@ -44,6 +50,8 @@ window.draw = function() {
     }
     endShape();
   }
+
+  drawSprites();
 }
 
 function togglePlay() {
