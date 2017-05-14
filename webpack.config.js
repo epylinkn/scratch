@@ -2,7 +2,7 @@ var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: "./src/beat-detect.js",
+  entry: "./src/tetris.js",
   output: {
     filename: 'sketch.js',
     path: path.join(__dirname, 'dist'),
