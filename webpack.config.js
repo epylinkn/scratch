@@ -2,7 +2,7 @@ var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: "./src/tetris.js",
+  entry: "./src/digital_arpeggios.js",
   output: {
     filename: 'sketch.js',
     path: path.join(__dirname, 'dist'),
@@ -56,7 +56,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/index-global.html"
+      template: "src/index.html"
     }),
   ]
 };
