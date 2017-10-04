@@ -2,7 +2,7 @@ var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: "./src/digital_arpeggios.js",
+  entry: "./src/colorme.js",
   output: {
     filename: 'sketch.js',
     path: path.join(__dirname, 'dist'),
