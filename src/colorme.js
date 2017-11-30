@@ -12,21 +12,27 @@ const sketch = (p5) => {
     {
       name: "LightGoldenRodYellow",
       hex: "#FAFAD2",
-      description: "Unique among accepted HTML color names, LightGoldenRodYellow is the longest."
+      description: "A quirky color that is included in the limited set of HTML colors that are able to be referenced by name. " +
+        "I include it here because it’s a color I pull up a lot for a light, non-white shade. " +
+        "But in all honesty, I like this color because it has the longest name among all HTML color names.",
+      text: "#000000"
     }, {
-      name: "COFFEE",
+      name: "C0FFEE",
       hex: "#C0FFEE",
-      description: "A cute color with a cute hex code for the one and only love of our lives: coffee."
+      description: "A cute color with a cute hex code for the one and only love of our lives: coffee.",
+      text: "#000000"
     },
     {
-      name: "Coffee-pink",
+      name: "C0FFEE-PINK",
       hex: "#FFCCC0",
-      description: "The complimentary color to coffee."
+      description: "C0FFEE’s complementary color according to the color wheel.",
+      text: "#000000"
     },
     {
       name: "Machine-Learned Red",
       hex: "#D95E50",
-      description: "Machine-learned red..."
+      description: "An orangish-red, this color was machine-learned from the rest of the palette. A subtle reminder of our impending doom and soon-to-be overlords.",
+      text: "#FFFFFF"
     },
     {
       name: "Eigengrau",
@@ -34,17 +40,19 @@ const sketch = (p5) => {
       description: "A dark gray that literally translates to \"intrinsic gray\" or \"own gray\", " +
         "Eigengrau is the dark gray the human eye sees in absolute darkness. " +
         "\n\nEigengrau is a phenonomenon believed to be caused by intrinsic noise in our optic nerves. " +
-        "As a result, it is often referred to as \"visual noise\"."
+        "As a result, it is often referred to as \"visual noise\".",
+      text: "#FFFFFF"
     },
     {
       name: "Metallic Gold",
       hex: "#D4AF37",
-      description: "A simple metallic gold, slightly darker and seen in leafing. When used in tiny hints, reveals fun and festivity."
+      description: "A material / color / texture that just really brings me a lot of joy. Especially the way it breathes when it reflects light. Did I mention you can eat it? #ediblegoldleaf",
+      text: "#000000"
     }
-      // nixie orange???
   ]
 
   var goldimg = require('./assets/gold-leaf.jpg');
+  console.log(goldimg);
   var img;
   var active = null;
   var width;
@@ -100,19 +108,19 @@ const sketch = (p5) => {
 
   p5.draw = () => {
     function display_meta() {
-      p5.fill(255);
+      p5.fill(color_meta[active]["text"]);
       p5.textFont("Roboto");
       p5.textSize(48);
       p5.textStyle("BOLD");
       p5.text(color_meta[active]["name"], 200, 200);
 
-      p5.fill(255);
+      p5.fill(color_meta[active]["text"]);
       p5.textFont("Roboto");
       p5.textSize(20);
       p5.textStyle("NORMAL");
       p5.text(color_meta[active]["description"], 200, 290, 450, p5.windowHeight);
 
-      p5.fill(255);
+      p5.fill(color_meta[active]["text"]);
       p5.textFont("Inconsolata");
       p5.textSize(32);
       p5.text(color_meta[active]["hex"], 200, 250);
@@ -147,6 +155,15 @@ const sketch = (p5) => {
         p5.image(img, p5.windowWidth - width, 0.1 * p5.windowHeight, width, 0.8 * p5.windowHeight, 0, 0.1 * p5.windowHeight, width, 0.8 * p5.windowHeight);
       }
     }
+
+    // var noiseScale=0.02;
+    // background(0);
+
+    // for (var x=0; x < width; x++) {
+    //   var noiseVal = noise((mouseX+x)*noiseScale, mouseY*noiseScale);
+    //   stroke(noiseVal*255);
+    //   line(x, mouseY+noiseVal*80, x, height);
+    // }
   }
 
   p5.mouseClicked = () => {
