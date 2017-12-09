@@ -3,6 +3,8 @@ import 'p5/lib/addons/p5.sound';
 import 'p5/lib/addons/p5.dom';
 import _ from 'lodash';
 
+require('./assets/otheringmachine.scss');
+
 
 const sketch = (p5) => {
   window.p5 = p5;
@@ -13,12 +15,15 @@ const sketch = (p5) => {
   var clips;
   var bicep = require('./assets/bicep.mp4');
   var gosh = require('./assets/gosh.mp4');
+  var clip1 = require('./assets/clip1.mp4');
   var playing = false;
   var videoIndex = 0;
+  var groupButtons;
+  var groupSelection;
+  var labelButtons;
+  var labelSelection;
 
   // SPIKE
-  var groupOptions = ['vegan', 'left-handed people', 'beliebers'];
-  var labelOptions = ['illegal', 'radical', 'criminal'];
   var narrativeOptions = {
     'vegan.illegal': [
       'narrative 1',
@@ -42,6 +47,11 @@ const sketch = (p5) => {
     clips = [
       {
         start: 0,
+        end: 0,
+        video: p5.createVideo([clip1])
+      },
+      {
+        start: 0,
         end: 10,
         video: p5.createVideo([bicep]),
       },
@@ -49,10 +59,11 @@ const sketch = (p5) => {
         start: 15,
         end: 25,
         video: p5.createVideo([gosh])
-      }
+      },
     ]
     _.map(clips, (clip) => { clip.video.hide() });
-    clips[1].video.time(15);
+    clips[0].video.time(10);
+    clips[2].video.time(15);
   }
 
   p5.draw = () => {
@@ -74,16 +85,6 @@ const sketch = (p5) => {
       p5.text(text, p5.windowWidth / 2, p5.windowHeight / 2);
     }
 
-    function dispalyOptions(options) {
-      p5.fill(color);
-      p5.textFont("Roboto");
-      p5.textSize(100);
-      p5.textStyle("BOLD");
-      p5.textAlign(p5.CENTER);
-      p5.text(text, p5.windowWidth / 2, p5.windowHeight / 2);
-
-    }
-
     switch(step) {
       case 0:
         p5.background("black");
@@ -98,25 +99,42 @@ const sketch = (p5) => {
 
         p5.background("black");
         p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+
         break;
       case 2:
         if (playing) {
-          clips[videoIndex].video.pause()
           playing = false;
+
+          clips[videoIndex].video.pause()
+
+          let groupOptions = ['vegan', 'leftists', 'beliebers', 'elders'];
+          groupButtons = _.map(groupOptions, function(option, i) {
+            let width = p5.windowWidth / groupOptions.length;
+            let button = p5.createButton(option, option);
+            button.class("group-option");
+            button.position(i * width, 0, width, 100);
+            button.mousePressed(groupMousePressed);
+
+            return button;
+          });
         }
 
         p5.background("black");
         displayTitle("SELECT A TARGET GROUP");
+
         break;
       case 3:
         videoIndex = 1;
         if (!playing) {
+          // remove all the buttons...
+          _.map(groupButtons, function(button) { button.remove(); });
           clips[videoIndex].video.play()
           playing = true;
         }
 
         p5.background("black");
         p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+
         break;
       case 4:
         if (playing) {
@@ -126,8 +144,82 @@ const sketch = (p5) => {
 
         p5.background("black");
         displayTitle("SELECT A LABEL");
+
+        var labelOptions = ['illegal', 'radical', 'militant', 'criminal'];
+        labelButtons = _.map(labelOptions, function(option, i) {
+          let width = p5.windowWidth / labelOptions.length;
+          let button = p5.createButton(option, option);
+          button.class("label-option");
+          button.position(i * width, 0, width, 100);
+          button.mousePressed(labelMousePressed);
+
+          return button;
+        });
+
         break;
+      case 5:
+        videoIndex = 2;
+        if (!playing) {
+          // remove all the buttons...
+          _.map(labelButtons, function(button) { button.remove(); });
+          clips[videoIndex].video.play();
+          playing = !playing;
+        }
+
+        p5.background("black");
+        p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+
+        break;
+      case 6:
+        if (playing) {
+          clips[videoIndex].video.pause();
+          playing = !playing;
+        }
+
+        p5.background("black");
+        displayTitle("SELECT A NARRATIVE");
+
+        // var narrativeOptions = ['one', 'two', 'three'];
+        // buttons = _.map(labelOptions, function(option, i) {
+        //   let width = p5.windowWidth / labelOptions.length;
+        //   let button = p5.createButton(option, option);
+        //   button.class("narrative-option");
+        //   button.position(i * width, 0, width, 100);
+        //
+        //   return button;
+        // });
+
+        break;
+
+      case 7:
+        // videoIndex = 2;
+        // if (!playing) {
+        //   // remove all the buttons...
+        //   _.map(buttons, function(button) { button.remove(); });
+        //   clips[videoIndex].video.play()
+        //   playing = true;
+        // }
+        //
+        // p5.background("black");
+        // p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+
+        break;
+
     }
+
+
+    debug("group: " + groupSelection + " --- label: " + labelSelection);
+  }
+
+
+  function groupMousePressed(event) {
+    event.preventDefault();
+    groupSelection = event.target.value;
+  }
+
+  function labelMousePressed(event) {
+    event.preventDefault();
+    labelSelection = event.target.value;
   }
 
   p5.mouseClicked = () => {
