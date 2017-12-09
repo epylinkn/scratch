@@ -1,68 +1,97 @@
 import p5 from 'p5';
 import 'p5/lib/addons/p5.sound';
 import 'p5/lib/addons/p5.dom';
+window.p5 = p5;
+require("./assets/p5.serialport.js");
+window.p5.SerialPort = p5.SerialPort;
 import _ from 'lodash';
 
 require('./assets/otheringmachine.scss');
 
 const sketch = (p5) => {
-  window.p5 = p5;
+  const DEBUG_FLAG = false;
+  var serial;
 
   var randomImage = require('./assets/heart.svg');
-  // var img;
-  var step = 0;
+  var step = 6;
   var clips;
-  var bicep = require('./assets/bicep.mp4');
-  var gosh = require('./assets/gosh.mp4');
   var clip1 = require('./assets/clip1.mp4');
-  var playing = false;
+  var clip2 = require('./assets/clip2.mp4');
+  var clip3 = require('./assets/clip3.mp4');
+  var clip4 = require('./assets/clip4.mp4');
+  var clip5 = require('./assets/clip5.mp4');
+  var clip6 = require('./assets/clip6.mp4'); // after effects grid gif
+  var clip7 = require('./assets/clip7.mp4');
+  var newStep = true;
+
   var videoIndex = 0;
-  var groupButtons;
-  var groupSelection;
-  var labelButtons;
-  var labelSelection;
+  var groupSelection = 1;
+  var labelSelection = 1;
+  var narrativeSelection = 1;
+  var width;
+  var length;
+  var grid;
+
+  var bgTitle;
+  var bgGray;
+  var bgBlack;
+  var bgGreen;
+
+  var awaitingInteraction = false;
 
   // SPIKE
-  var narrativeOptions = {
-    'vegan.illegal': [
-      'narrative 1',
-      'narrative 2',
-      'narrative 3',
-    ],
-    'vegan.radical': [
-      'narrative 1',
-      'narrative 2',
-      'narrative 3',
-    ],
+  var narrativeOptions;
+  var fakeNews;
+  var fakeNewsVideo;
+  var fakeNewsVideos = {
+    "vegans.illegal": require('./assets/vegans.illegal.mov')
   }
 
   p5.preload = () => {
-    // img = p5.loadImage(randomImage);
+    bgTitle = p5.loadImage(require('./assets/bg-title.jpg'));
+    bgGray = p5.loadImage(require('./assets/bg-gray.jpg'));
+    bgBlack = p5.loadImage(require('./assets/bg-black.jpg'));
+    bgGreen = p5.loadImage(require('./assets/bg-green.jpg'));
+
+    narrativeOptions = p5.loadJSON(require('./assets/narratives.json'));
+    fakeNews = p5.loadJSON(require('./assets/fakenews.json'));
   }
 
   p5.setup = () => {
     p5.createCanvas(p5.windowWidth, p5.windowHeight);
 
+    serial = new p5.SerialPort();
+    serial.open("/dev/cu.usbmodem14411");
+    //
+    // serial.on("connected", function() {
+    //   alert('serial connected');
+    // });
+
     clips = [
       {
-        start: 0,
-        end: 0,
         video: p5.createVideo([clip1])
       },
       {
-        start: 0,
-        end: 10,
-        video: p5.createVideo([bicep]),
+        video: p5.createVideo([clip2])
       },
       {
-        start: 15,
-        end: 25,
-        video: p5.createVideo([gosh])
+        video: p5.createVideo([clip3])
       },
-    ]
+      {
+        video: p5.createVideo([clip4])
+      },
+      {
+        video: p5.createVideo([clip5])
+      },
+      {
+        video: p5.createVideo([clip6])
+      },
+      {
+        video: p5.createVideo([clip7])
+      },
+    ];
+
     _.map(clips, (clip) => { clip.video.hide() });
-    clips[0].video.time(10);
-    clips[2].video.time(15);
   }
 
   p5.draw = () => {
@@ -72,144 +101,283 @@ const sketch = (p5) => {
       p5.textFont("Roboto");
       p5.textSize(20);
       p5.textAlign(p5.CENTER);
-      p5.text(text, p5.windowWidth / 2, p5.windowHeight - 100);
+      p5.text(text, p5.windowWidth / 2, 100);
+    }
+
+    function displayBackground(img) {
+      p5.image(img, 0, 0, p5.windowWidth, p5.windowHeight);
     }
 
     function displayTitle(text) {
       p5.fill(color);
       p5.textFont("Roboto");
-      p5.textSize(100);
+      p5.textSize(40);
       p5.textStyle("BOLD");
       p5.textAlign(p5.CENTER);
       p5.text(text, p5.windowWidth / 2, p5.windowHeight / 2);
     }
 
+    function displayVideo(videoIndex) {
+      let verticalMargin = 80;
+      let horizontalMargin = 120;
+      p5.image(
+        clips[videoIndex].video,
+        horizontalMargin,
+        verticalMargin,
+        p5.windowWidth - 2 * horizontalMargin,
+        p5.windowHeight - 2 * verticalMargin
+      );
+    }
+
+    function displayFakeNews(key, small) {
+      if (small) {
+        let verticalMargin = 203;
+        let horizontalMargin = 322;
+
+        p5.image(
+          fakeNewsVideo,
+          horizontalMargin,
+          verticalMargin,
+          p5.windowWidth - 2 * horizontalMargin,
+          p5.windowHeight - 2 * verticalMargin
+        );
+
+        // TODO headline
+      } else {
+        let verticalMargin = 75;
+        let horizontalMargin = 100;
+
+        p5.image(
+          fakeNewsVideo,
+          horizontalMargin,
+          verticalMargin,
+          p5.windowWidth - 2 * horizontalMargin,
+          p5.windowHeight - 2 * verticalMargin
+        );
+      }
+    }
+
+    function displayOption(text, i, width, active) {
+      if (active) {
+        p5.fill(color);
+        p5.rect(i * width, p5.windowHeight - 100, width, 100);
+      } else {
+        p5.fill("black");
+        p5.rect(i * width, p5.windowHeight - 100, width, 100);
+      }
+
+      p5.fill("white");
+      p5.textFont("Roboto");
+      p5.textSize(32);
+      p5.textStyle("BOLD");
+      p5.textAlign(p5.CENTER, p5.CENTER);
+      p5.text(_.upperCase(text), i * width, p5.windowHeight - 100, width, 100);
+    }
+
     switch(step) {
       case 0:
-        p5.background("black");
-        displayTitle("WELCOME");
-        break;
-      case 1:
-        videoIndex = 0;
-        if (!playing) {
-          clips[videoIndex].video.play();
-          playing = true;
+        if (newStep) {
+          newStep = false;
+          displayBackground(bgTitle);
         }
 
-        p5.background("black");
-        p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+        // displayTitle("WELCOME");
+
+        break;
+      case 1:
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 0;
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
+        }
+
+        displayVideo(videoIndex);
 
         break;
       case 2:
-        if (playing) {
-          playing = false;
+        if (newStep) {
+          newStep = false;
 
           clips[videoIndex].video.pause()
-
-          let groupOptions = ['vegan', 'leftists', 'beliebers', 'elders'];
-          groupButtons = _.map(groupOptions, function(option, i) {
-            let width = p5.windowWidth / groupOptions.length;
-            let button = p5.createButton(option, option);
-            button.class("group-option");
-            button.position(i * width, 0, width, 100);
-            button.mousePressed(groupMousePressed);
-
-            return button;
-          });
         }
 
-        p5.background("black");
+        displayBackground(bgBlack);
         displayTitle("SELECT A TARGET GROUP");
+
+        let groupOptions = ['vegans', 'lefties', 'beliebers'];
+        length = groupOptions.length;
+        width = p5.windowWidth / length;
+        for (var i = 0; i < length; i++) {
+          displayOption(groupOptions[i], i, width, i === groupSelection)
+        }
 
         break;
       case 3:
-        videoIndex = 1;
-        if (!playing) {
-          // remove all the buttons...
-          _.map(groupButtons, function(button) { button.remove(); });
-          clips[videoIndex].video.play()
-          playing = true;
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 1;
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
         }
 
-        p5.background("black");
-        p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+        displayVideo(videoIndex);
 
         break;
       case 4:
-        if (playing) {
+        if (newStep) {
+          newStep = false;
           clips[videoIndex].video.pause()
-          playing = false;
+          displayBackground(bgBlack);
         }
 
-        p5.background("black");
         displayTitle("SELECT A LABEL");
 
-        var labelOptions = ['illegal', 'radical', 'militant', 'criminal'];
-        labelButtons = _.map(labelOptions, function(option, i) {
-          let width = p5.windowWidth / labelOptions.length;
-          let button = p5.createButton(option, option);
-          button.class("label-option");
-          button.position(i * width, 0, width, 100);
-          button.mousePressed(labelMousePressed);
-
-          return button;
-        });
+        var labelOptions = ['radical', 'illegal', 'militant'];
+        length = labelOptions.length;
+        width = p5.windowWidth / length;
+        for (var i = 0; i < length; i++) {
+          displayOption(labelOptions[i], i, width, i === labelSelection);
+        }
 
         break;
       case 5:
-        videoIndex = 2;
-        if (!playing) {
-          // remove all the buttons...
-          _.map(labelButtons, function(button) { button.remove(); });
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 2;
           clips[videoIndex].video.play();
-          playing = !playing;
+          displayBackground(bgGray);
         }
 
-        p5.background("black");
-        p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+        displayVideo(videoIndex);
 
         break;
       case 6:
-        if (playing) {
+        if (newStep) {
+          newStep = false;
           clips[videoIndex].video.pause();
-          playing = !playing;
+          displayBackground(bgBlack);
         }
 
-        p5.background("black");
         displayTitle("SELECT A NARRATIVE");
 
-        // var narrativeOptions = ['one', 'two', 'three'];
-        // buttons = _.map(labelOptions, function(option, i) {
-        //   let width = p5.windowWidth / labelOptions.length;
-        //   let button = p5.createButton(option, option);
-        //   button.class("narrative-option");
-        //   button.position(i * width, 0, width, 100);
-        //
-        //   return button;
-        // });
+        groupSelection = "vegans";
+        labelSelection = "illegal";
+
+        var narratives = narrativeOptions[`${groupSelection}.${labelSelection}`];
+        length = narratives.length;
+        width = p5.windowWidth / length;
+        for (var i = 0; i < length; i++) {
+          if (i === narrativeSelection) {
+            p5.fill(color);
+          } else {
+            p5.fill("black");
+          }
+          p5.rect(i * width, 0, width, p5.windowHeight);
+
+          p5.fill("white");
+          p5.textFont("Roboto");
+          p5.textSize(24);
+          p5.textStyle("BOLD");
+          p5.textAlign(p5.CENTER, p5.CENTER);
+          p5.text(narratives[i], i * width + 20, 0, width - 40, p5.windowHeight);
+        }
 
         break;
-
       case 7:
-        // videoIndex = 2;
-        // if (!playing) {
-        //   // remove all the buttons...
-        //   _.map(buttons, function(button) { button.remove(); });
-        //   clips[videoIndex].video.play()
-        //   playing = true;
-        // }
-        //
-        // p5.background("black");
-        // p5.image(clips[videoIndex].video, 0, 0, p5.windowWidth, p5.windowHeight);
+        // you're a natural... here are some notable works
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 3;
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
+        }
+
+        displayVideo(videoIndex);
 
         break;
+      case 8:
+        // grid
+        if (newStep) {
+          newStep = false;
 
+          videoIndex = 4;
+          clips[videoIndex-1].video.pause();
+          clips[videoIndex].video.play();
+          displayBackground(bgBlack);
+        }
+
+        displayVideo(videoIndex);
+
+        break;
+      case 9:
+        // white man: and here is what you've done so far
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 5;
+          clips[videoIndex-1].video.pause();
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
+        }
+
+        displayVideo(videoIndex);
+
+        break;
+      case 10:
+        // fake news
+        if (newStep) {
+          newStep = false;
+
+          clips[videoIndex].video.pause();
+          fakeNewsVideo = p5.createVideo([fakeNewsVideos[`${groupSelection}.${labelSelection}`]]);
+          fakeNewsVideo.hide();
+          fakeNewsVideo.play();
+
+          displayBackground(bgBlack);
+        }
+
+        displayFakeNews(`${groupSelection}.${labelSelection}`);
+
+        break;
+      case 11:
+        // picture in grid
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 4;
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
+        }
+
+        displayVideo(videoIndex);
+        displayFakeNews(`${groupSelection}.${labelSelection}`, true);
+
+        break;
+      case 12:
+        // closing statement
+        if (newStep) {
+          newStep = false;
+
+          videoIndex = 6;
+          fakeNews[`${groupSelection}.${labelSelection}`].video.pause();
+          clips[videoIndex].video.play();
+          displayBackground(bgGray);
+        }
+
+        displayVideo(videoIndex);
+
+        break;
     }
 
-
-    debug("group: " + groupSelection + " --- label: " + labelSelection);
+    if (DEBUG_FLAG) {
+      debug("step: " + step + " group: " + groupSelection + " --- label: " + labelSelection);
+    }
   }
-
 
   function groupMousePressed(event) {
     event.preventDefault();
@@ -228,6 +396,7 @@ const sketch = (p5) => {
     // SPACEBAR
     if (p5.keyCode === 32) {
       step++;
+      newStep = true;
     }
   }
 
