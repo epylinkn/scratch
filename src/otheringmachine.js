@@ -5,7 +5,6 @@ import _ from 'lodash';
 
 require('./assets/otheringmachine.scss');
 
-
 const sketch = (p5) => {
   window.p5 = p5;
 
